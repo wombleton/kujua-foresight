@@ -1,0 +1,16 @@
+{
+    "name": "font-awesome-kanso",
+    "version": "0.0.1",
+    "description": "Font Awesome for kanso",
+    "url": "https://github.com/wombleton/font-awesome-kanso",
+    "less": {
+        "paths": ["."]
+    },
+    "attachments": [
+        "font"
+    ],
+    "dependencies": {
+        "attachments": null,
+        "less-precompiler": null
+    }
+}

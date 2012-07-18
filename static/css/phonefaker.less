@@ -1,0 +1,39 @@
+@import "bootstrap/bootstrap.less";
+@import "font-awesome.less";
+@fontIconDirectory: "../../font";
+
+body {
+  margin: 40px 0 115px;
+}
+
+.fixed-bottom {
+  .container {
+    width: 940px;
+  }
+  position: fixed;
+  right: 0;
+  left: 0;
+  z-index: 1030;
+  margin-bottom: 0;
+  bottom: 0;
+  background-color: #999;
+  padding: 10px 0 0;
+  .form-horizontal {
+    .control-group {
+      margin-bottom: 3px;
+    }
+  }
+}
+
+.send {
+  cursor: pointer;
+}
+
+.message {
+  padding: 5px 0 10px;
+  .data {
+    font-family: @monoFontFamily;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}

@@ -1,0 +1,10 @@
+{
+    "name": "kanso-assets",
+    "version": "0.0.2",
+    "categories": ["build-tools"],
+    "description": "Transparent file compilation and dependency management. Inspired by connect-assets.",
+    "url": "https://github.com/wombleton/kanso-assets",
+    "postprocessors": {
+        "compile": "build/compile"
+    }
+}
