@@ -6,6 +6,10 @@ Foresight.CalendarView = Backbone.View.extend(
     @months = new Foresight.Months()
     $(window).on('resize scroll', _.bind(@onScroll, @))
     @onScroll()
+    Foresight.bus.bind('calendar:select-date', ($day) =>
+      $('.selected', @$el).removeClass('selected')
+      $day.addClass('selected')
+    )
   addMonth: (time, offset = 0) ->
     time = new Date(time)
     time.setDate(1)

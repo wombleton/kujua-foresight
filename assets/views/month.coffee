@@ -1,4 +1,6 @@
 Foresight.MonthView = Backbone.View.extend(
+  events:
+    'click .day': 'selectDay'
   initialize: ->
     @fetchData()
   render: ->
@@ -33,13 +35,12 @@ Foresight.MonthView = Backbone.View.extend(
   getIcon: (date) ->
     sent = @data[date]?[1]
     if sent
-      """<i class="icon-thumbs-up"></i>"""
+      """<i class="icon-ok-sign"></i>"""
     else if sent is false
       """<i class="icon-bolt"></i>"""
     else
       ''
   fetchData: ->
-    time = @model.get('time')
     $.ajax(
       complete: (response) =>
         rows = JSON.parse(response.responseText)?.rows
@@ -50,7 +51,7 @@ Foresight.MonthView = Backbone.View.extend(
           counts
         , {})
         @render()
-      url: "/kujua/_design/kujua-foresight/_rewrite/#{time.getFullYear()}/#{time.getMonth() + 1}/counts.json"
+      url: "/kujua/_design/kujua-foresight/_rewrite/#{@model.getYear()}/#{@model.getMonth()}/counts.json"
     )
   addWeek: (marker, month) ->
     html = [ """<div class="row week">""" ]
@@ -58,16 +59,19 @@ Foresight.MonthView = Backbone.View.extend(
       date = marker.getDate()
 
       if marker.getMonth() is month
-        cls = 'in'
         count = @getCount(date)
         icon = @getIcon(date)
+        if icon
+          cls = 'in messages'
+        else
+          cls = 'in'
       else
         cls = 'out'
         count = 0
         icon = ''
 
       html.push("""
-        <div class="span1 day #{cls} #{date}">
+        <div class="span1 day #{cls}" data-date="#{date}">
           <div class="date">
             #{date}
           </div>
@@ -78,4 +82,13 @@ Foresight.MonthView = Backbone.View.extend(
     html.push("</div>")
     html.join('')
   className: 'month'
+  selectDay: (e) ->
+    $day = $(e.target).parents('.day')
+    date = Number($day.attr('data-date'))
+    if $day.is('.in')
+      month = @model.getMonth()
+      year = @model.getYear()
+      Foresight.bus.trigger('calendar:select-date', $day, year, month, date)
+    else
+      false
 )

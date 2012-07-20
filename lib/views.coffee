@@ -7,10 +7,11 @@ module.exports =
       list = tasks.concat(scheduled_tasks)
       list.forEach((item) ->
         ts = item.timestamp or item.due
+        messages = item.messages
         sent = !item.due
-        if ts
+        if ts and messages?.length
           date = new Date(ts)
-          emit(["#{date.getFullYear()}", "#{date.getMonth() + 1}", "#{date.getDate()}", "#{date.getHours()}"], [1, sent])
+          emit(["#{date.getFullYear()}", "#{date.getMonth() + 1}", "#{date.getDate()}", "#{date.getHours()}"], [messages.length, sent])
       )
     reduce: (keys, values) ->
       allSent = true
@@ -20,3 +21,25 @@ module.exports =
         sum += count
       )
       [sum, allSent]
+  messages:
+    map: (doc) ->
+      tasks = doc.tasks or []
+      scheduled_tasks = doc.scheduled_tasks or []
+
+      list = tasks.concat(scheduled_tasks)
+
+      list.forEach((item) ->
+        ts = item.timestamp or item.due
+        sent = !item.due
+        messages = item.messages
+        if ts and messages?.length
+          date = new Date(ts)
+          messages.forEach((message) ->
+            emit(["#{date.getFullYear()}", "#{date.getMonth() + 1}", "#{date.getDate()}"],
+              sent: sent
+              timestamp: ts
+              message: message.message
+              to: message.to
+            )
+          )
+      )

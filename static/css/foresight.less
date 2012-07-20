@@ -3,9 +3,38 @@
 @import "elements.less";
 @fontIconDirectory: "../../font";
 
-@dayColor: #468847;
+@dayColor: @infoText;
+@dayColorBottom: spin(darken(@dayColor, 10%), 10);
+@dayColorTop: lighten(@dayColor, 10%);
+
+@outColor: fadeout(@grayLight, 30);
+@outColorBottom: darken(@outColor, 10);
+@outColorTop: lighten(@outColor, 10);
+
 body {
   margin: 40px 0 0;
+}
+
+#detail {
+  position: fixed;
+  overflow-y: auto;
+  top: 48px;
+  margin-left: 640px;
+  .drop-shadow(2px, 2px, 6px, 0.6);
+  .bw-gradient(#eee, 225, 245);
+  padding: 5px 10px;
+
+  .message {
+    .header {
+      font-size: @baseFontSize - 3;
+    }
+    .body {
+      font-family: @monoFontFamily;
+      font-size: @baseFontSize - 2;
+      margin-bottom: 8px;
+      padding-left: 10px;
+    }
+  }
 }
 
 .month {
@@ -32,6 +61,7 @@ body {
         top: 1px;
         left: 5px;
         font-size: 9px;
+        font-weight: bold;
       }
       .count {
         font-size: 14px;
@@ -41,14 +71,29 @@ body {
         text-align: right;
       }
       &.in {
-        .bordered(lighten(@dayColor, 10%), lighten(@dayColor, 10%), @dayColor, @dayColor);
-        .gradient(@dayColor, spin(darken(@dayColor, 10%), -20), lighten(@dayColor, 20%));
+        .bordered(@dayColorTop, @dayColorTop, @dayColorBottom, @dayColorBottom);
+        .gradient(fadeout(@dayColor, 25), fadeout(@dayColorBottom, 25), fadeout(@dayColorTop, 25));
         cursor: pointer;
+
+        &.messages {
+          .bordered(@dayColorTop, @dayColorTop, @dayColorBottom, @dayColorBottom);
+          .gradient(@dayColor, @dayColorBottom, @dayColorTop);
+        }
+        &.selected {
+          .gradient(@dayColor, spin(@dayColorBottom, 20), spin(@dayColorTop, 20));
+          .date, .count {
+            color: @orange;
+          }
+        }
       }
       &.out {
         color: #ccc;
-        .bordered(desaturate(@dayColor, 30), desaturate(@dayColor, 30), @dayColor, @dayColor);
-        .gradient(@dayColor, lighten(desaturate(spin(darken(@dayColor, 10%), -20), 30), 20), lighten(desaturate(lighten(@dayColor, 20%), 30), 20));
+        .bordered(@outColorTop, @outColorTop, @outColorBottom, @outColorBottom);
+        .gradient(@outColor, @outColorBottom, @outColorTop);
+        .date {
+          color: @grayLighter;
+          font-weight: normal;
+        }
       }
     }
   }

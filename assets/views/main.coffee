@@ -1,4 +1,5 @@
 #= require calendar
+#= require messages
 
 Foresight.MainView = Backbone.View.extend(
   initialize: ->
@@ -15,14 +16,14 @@ Foresight.MainView = Backbone.View.extend(
           <div class="span8">
             <div id="calendar">&nbsp;</div>
           </div>
-          <div class="span4">
-            <h2>Detail</h2>
+          <div class="span4" id="detail">
             <div id="messages"></div>
           </div>
         </div>
       </div>
     """)
     @calendar = new Foresight.CalendarView(el: '#calendar')
+    @messages = new Foresight.MessagesView(el: '#messages')
     @
 )
 
