@@ -49,7 +49,6 @@ Foresight.SchedulerView = Backbone.View.extend(
         url: '/kujua/_design/kujua-foresight/_view/registrations'
         complete: (response) =>
           rows = JSON.parse(response.responseText)?.rows
-          { _id, _rev } = rows?[0] || {}
           @setPatient(rows?[0])
           @validate()
       )
@@ -79,7 +78,7 @@ Foresight.SchedulerView = Backbone.View.extend(
     @patientEl[0].focus()
     @$
   schedule: ->
-    { _id, _rev } = @patient
+    { _id, _rev, phone } = @patient
     $.ajax(
       complete: (response) =>
         doc = JSON.parse(response.responseText)
@@ -89,7 +88,7 @@ Foresight.SchedulerView = Backbone.View.extend(
           state: 'scheduled'
           due: @date.getTime()
           messages: [
-            to: '+1234'
+            to: phone
             message: @$('textarea').val()
           ]
           type: 'manual_reminder'

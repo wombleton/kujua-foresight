@@ -45,9 +45,10 @@ module.exports =
       )
   registrations:
     map: (doc) ->
-      { _id, _rev, patient_identifiers, contact } = doc
+      { contact, _id, _rev, patient_identifiers } = doc
+      phone = contact?.phone
 
-      if Array.isArray(patient_identifiers) and contact?.phone
+      if Array.isArray(patient_identifiers) and phone
         patient_identifiers.forEach((id) ->
           emit(id,
             _id: _id
