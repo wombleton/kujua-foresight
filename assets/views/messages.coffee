@@ -1,28 +1,45 @@
 #= require ../collections/messages
 #= require message
+#= require scheduler
 
 Foresight.MessagesView = Backbone.View.extend(
   initialize: ->
     @messages = new Foresight.Messages()
-    @messages.bind('reset', _.bind(@render, @))
-    Foresight.bus.bind('calendar:select-date', (el, year, month, date) =>
+    @messages.bind('reset', _.bind(@updateMessages, @))
+    $(window).on('resize', _.bind(@fixHeight, @))
+    Foresight.bus.bind('calendar:select-date', (month) =>
       _.extend(@messages,
-        year: year
-        month: month
-        date: date
+        year: month.getYear()
+        month: month.getMonth()
+        date: month.getDate()
       )
       @messages.fetch()
     )
     @render()
   render: ->
+    @$el.html("""
+      <h3>No messages</h3>
+      <div class="messages-body"></div>
+    """)
+    @header = @$('h3')
+    @body = @$('.messages-body')
+    @scheduler = new Foresight.SchedulerView()
+    @$el.append(@scheduler.render().el)
+    @fixHeight()
+
+    @updateMessages()
+  fixHeight: _.debounce(->
+      h = document.documentElement.clientHeight - 70
+      $('#detail').height(h)
+      $('#detail .messages-body').height(h - 230)
+    , 50)
+  updateMessages: ->
+    @body.html('')
     if @messages.year and @messages.length
-      @$el.html("<h3>Messages for #{Foresight.formatDate(new Date(@messages.year, @messages.month - 1, @messages.date))}</h3>")
+      @header.html("Messages for #{Foresight.formatDate(new Date(@messages.year, @messages.month - 1, @messages.date))}")
       _.each(@messages.models, (message) ->
-        @$el.append(new Foresight.MessageView(model: message).render().el)
+        @body.append(new Foresight.MessageView(model: message).render().el)
       , @)
     else
-      @$el.html("""
-        <h3>No messages.</h3>
-      """)
-    $('#detail').height(document.documentElement.clientHeight - 70)
+      @header.html('<h3>No messages.</h3>')
 )

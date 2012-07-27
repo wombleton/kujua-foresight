@@ -2,6 +2,11 @@ Foresight.MonthView = Backbone.View.extend(
   events:
     'click .day': 'selectDay'
   initialize: ->
+    @model.on('month:refresh', _.bind(@fetchData, @))
+    @model.on('change:selectedDate', =>
+      Foresight.bus.trigger('calendar:select-date', @model)
+      @$("[data-date=#{@model.get('selectedDate')}]").addClass('selected')
+    )
     @fetchData()
   render: ->
     weeksHtml = ""
@@ -28,6 +33,8 @@ Foresight.MonthView = Backbone.View.extend(
       #{weeksHtml}
     """)
     @$el.attr('id', @model.getId())
+    if @model.get('selectedDate')
+      @$("[data-date=#{@model.get('selectedDate')}]").addClass('selected')
     @
   data: {}
   getCount: (date) ->
@@ -75,7 +82,9 @@ Foresight.MonthView = Backbone.View.extend(
           <div class="date">
             #{date}
           </div>
-            <div class="count">#{count or '&nbsp;'} #{icon}</div>
+          <div>
+          </div>
+          <div class="count">#{count or '&nbsp;'} #{icon}</div>
         </div>
       """)
       marker.setDate(marker.getDate() + 1)
@@ -86,9 +95,7 @@ Foresight.MonthView = Backbone.View.extend(
     $day = $(e.target).parents('.day')
     date = Number($day.attr('data-date'))
     if $day.is('.in')
-      month = @model.getMonth()
-      year = @model.getYear()
-      Foresight.bus.trigger('calendar:select-date', $day, year, month, date)
+      @model.set('selectedDate', date)
     else
       false
 )

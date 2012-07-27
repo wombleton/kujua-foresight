@@ -43,3 +43,17 @@ module.exports =
             )
           )
       )
+  registrations:
+    map: (doc) ->
+      { _id, _rev, patient_identifiers, contact } = doc
+
+      if Array.isArray(patient_identifiers) and contact?.phone
+        patient_identifiers.forEach((id) ->
+          emit(id,
+            _id: _id
+            _rev: _rev
+            phone: phone
+          )
+        )
+    reduce: (keys, values) ->
+      values[0]

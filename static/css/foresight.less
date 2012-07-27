@@ -1,6 +1,6 @@
+@import "elements.less";
 @import "bootstrap/bootstrap.less";
 @import "font-awesome.less";
-@import "elements.less";
 @fontIconDirectory: "../../font";
 
 @dayColor: @infoText;
@@ -17,12 +17,16 @@ body {
 
 #detail {
   position: fixed;
-  overflow-y: auto;
   top: 48px;
   margin-left: 640px;
   .drop-shadow(2px, 2px, 6px, 0.6);
   .bw-gradient(#eee, 225, 245);
-  padding: 5px 10px;
+  h3, .messages-body {
+    padding: 5px 10px;
+  }
+  .messages-body {
+    overflow-y: auto;
+  }
 
   .message {
     .header {
@@ -33,6 +37,14 @@ body {
       font-size: @baseFontSize - 2;
       margin-bottom: 8px;
       padding-left: 10px;
+    }
+  }
+  .scheduler {
+    position: fixed;
+    padding: 5px 10px;
+    bottom: 12px;
+    .header {
+      font-weight: bold;
     }
   }
 }

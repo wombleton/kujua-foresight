@@ -6,9 +6,14 @@ Foresight.Month = Backbone.Model.extend(
     time = @get('time')
     "#{Foresight.months[time.getMonth()]} #{time.getFullYear()}"
   getDate: ->
-    @get('time').getDate()
+    @get('selectedDate')
   getMonth: ->
     @get('time').getMonth() + 1
   getYear: ->
     @get('time').getFullYear()
+  getSelectedDate: ->
+    date = new Date(@get('time'))
+    if @get('selectedDate')
+      date.setDate(@get('selectedDate'))
+    date
 )
