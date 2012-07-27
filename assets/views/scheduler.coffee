@@ -100,6 +100,7 @@ Foresight.SchedulerView = Backbone.View.extend(
           type: 'PUT'
           url: "/kujua/#{_id}"
         )
+        @reset()
       data:
         _rev: _rev
       url: "/kujua/#{_id}"
