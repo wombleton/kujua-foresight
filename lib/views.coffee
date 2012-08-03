@@ -45,8 +45,25 @@ module.exports =
       )
   registrations:
     map: (doc) ->
-      { contact, _id, _rev, patient_identifiers } = doc
+      { contact, _id, _rev, patient_name, patient_id, patient_identifiers, tasks, scheduled_tasks } = doc
       phone = contact?.phone
+
+      tasks ?= []
+      last_message = null
+      tasks.forEach((task) ->
+        if task.timestamp
+          last_message ?= task
+          if last_message.timestamp < task.timestamp
+            last_message = task
+      )
+
+      scheduled_tasks ?= []
+      next_message = null
+      scheduled_tasks.forEach((task) ->
+        next_message ?= task
+        if task.due < next_message?.due
+          next_message = task
+      )
 
       if Array.isArray(patient_identifiers) and phone
         patient_identifiers.forEach((id) ->
@@ -54,7 +71,30 @@ module.exports =
             _id: _id
             _rev: _rev
             phone: phone
+            patient_name: patient_name
+            last_message: last_message
+            next_message: next_message
           )
         )
+      else if patient_id
+        emit(patient_id,
+          _id: _id
+          _rev: _rev
+          phone: phone
+          patient_name: patient_name
+          last_message: last_message
+          next_message: next_message
+        )
     reduce: (keys, values) ->
-      values[0]
+      if values.length > 0
+        values.reduce((memo, row) ->
+          memo.phone ?= row.phone
+          memo.patient_name ?= row.patient_name
+          if memo.next_message?.due < row.next_message?.due
+            memo.next_message = row.next_message
+          if memo.last_message?.timestamp > row.last_message?.timestamp
+            memo.last_message = row.last_message
+          memo
+        , values[0])
+      else
+        values

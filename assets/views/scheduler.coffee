@@ -1,8 +1,14 @@
+#= require patient
+#= require ../bootstrap-transition
+#= require ../bootstrap-datepicker
+#= require ../bootstrap-carousel
+#= require ../bootstrap-button
+
 Foresight.SchedulerView = Backbone.View.extend(
   events:
+    'click .close': 'close'
     'keyup': 'validate'
-    'click .reset': 'reset'
-    'click .schedule': 'schedule'
+    'click button[type=submit]': 'schedule'
   initialize: ->
     Foresight.bus.bind('calendar:select-date', (@month) =>
       @date = @month.getSelectedDate()
@@ -14,44 +20,67 @@ Foresight.SchedulerView = Backbone.View.extend(
         @dateEl.append(' *').addClass('label-important').removeClass('label-success')
       @validate()
     )
+    Foresight.bus.bind('patientid:change', (id) =>
+      if id
+        @$el.slideDown()
+      else
+        @$el.slideUp()
+    )
+    @render()
   render: ->
     @$el.html("""
-      <div class="header">
-        Schedule Message for <span class="date label label-important">No date selected</span>
+      <div class="container scheduler">
+        <div class="row">
+          <a class="btn close"><i class="icon-chevron-up"></i></a>
+        </div>
+        <div class="row">
+          <form class="span6">
+            <div id="myCarousel" class="carousel slide">
+              <div class="carousel-inner">
+                <div class="item active">
+                  I'm a sample message.
+                </div>
+                <div class="item">
+                  I'm another sample message.
+                </div>
+                <div class="item">
+                  I'm a third sample message.
+                </div>
+                <div class="item">
+                  <textarea placeholder="Write your custom message here"></textarea>
+                </div>
+              </div>
+              <a class="left carousel-control" href="#myCarousel" data-slide="prev">
+                <i class="icon-arrow-left"></i>
+              </a>
+              <a class="right carousel-control" href="#myCarousel" data-slide="next">
+                <i class="icon-arrow-right"></i>
+              </a>
+            </div>
+            <div class="input-append date pull-left" data-date="" data-date-format="yyyy-mm-dd">
+              <input class="span2" size="16" type="text" value="" readonly><span class="add-on"><i class="icon-calendar"></i></span>
+            </div>
+            <div class="btn-group pull-left" data-toggle="buttons-radio">
+              <button class="active btn">AM</button>
+              <button class="btn">Midday</button>
+              <button class="btn">PM</button>
+            </div>
+            <button class="btn btn-primary pull-left" type="submit" data-scheduling-text="Scheduling ...">Schedule</button>
+          </form>
+        </div>
       </div>
-      <form>
-        <label>Patient Id</label>
-        <div class="input-append">
-          <input type="text" class="patientId span2"><a class="indicator btn btn-danger"><i class="icon-remove-sign"></i></a>
-        </div>
-        <label>Message</label>
-        <textarea class="span3"></textarea>
-        <div>
-          <a class="btn btn-success schedule" disabled="disabled">Schedule</a>
-          <a class="btn reset">Reset</a>
-        </div>
-      </form>
     """)
-    @btnEl = @$('.indicator')
-    @iconEl = @$('.indicator i')
-    @patientEl = @$('.patientId')
-    @dateEl = @$('.date')
+    @patient_view = new Foresight.PatientView(model: null)
+    @$('form').after(@patient_view.render().el)
+
+
+    @$('.date').datepicker()
+    @$('.carousel').carousel(
+      interval: false
+    )
+    @$('[data-toggle=buttons-radio] button').button()
+    @$('form').submit(-> false)
     @
-  className: 'scheduler'
-  onPatientChange: (value = '') ->
-    value = value.trim()
-    @setPatient(null)
-    if value
-      $.ajax(
-        data:
-          group: true
-          key: """ "#{value}" """
-        url: '/kujua/_design/kujua-foresight/_view/registrations'
-        complete: (response) =>
-          rows = JSON.parse(response.responseText)?.rows
-          @setPatient(rows?[0])
-          @validate()
-      )
   validate: (e) ->
     if $(e?.target).is('.patientId')
       @onPatientChange(e.target.value)
@@ -61,23 +90,7 @@ Foresight.SchedulerView = Backbone.View.extend(
         @$('.schedule').removeAttr('disabled')
       else
         @$('.schedule').attr('disabled', 'disabled')
-  setPatient: (row) ->
-    @patient = row?.value
-    @btnEl.removeClass('btn-warning btn-success btn-danger')
-    @iconEl.removeClass('icon-ok-sign icon-ban-sign icon-question-sign')
-    if @patient
-      @btnEl.addClass('btn-success')
-      @iconEl.addClass('icon-ok-sign')
-    else
-      @btnEl.addClass('btn-danger')
-      @iconEl.addClass('icon-ban-sign')
-  reset: (e) ->
-    @$('form')[0].reset()
-    @onPatientChange()
-    @validate()
-    @patientEl[0].focus()
-    @$
-  schedule: ->
+  schedule: (e) ->
     { _id, _rev, phone } = @patient
     $.ajax(
       complete: (response) =>
@@ -105,4 +118,7 @@ Foresight.SchedulerView = Backbone.View.extend(
         _rev: _rev
       url: "/kujua/#{_id}"
     )
+  close: ->
+    @$el.slideUp()
+    Foresight.bus.trigger('patientid:clear')
 )

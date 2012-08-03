@@ -54,7 +54,13 @@ Foresight.MonthView = Backbone.View.extend(
         @data = _.reduce(rows, (counts, row) ->
           { key, value } = row
           [ year, month, date ] = key
-          counts[Number(date)] = value
+          date = Number(date)
+          val = counts[date]
+          if val
+            val[0] += value[0]
+            val[0] &&= value[1]
+          else
+            counts[date] = value
           counts
         , {})
         @render()

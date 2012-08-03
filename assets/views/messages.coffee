@@ -1,6 +1,5 @@
 #= require ../collections/messages
 #= require message
-#= require scheduler
 
 Foresight.MessagesView = Backbone.View.extend(
   initialize: ->
@@ -23,8 +22,6 @@ Foresight.MessagesView = Backbone.View.extend(
     """)
     @header = @$('h3')
     @body = @$('.messages-body')
-    @scheduler = new Foresight.SchedulerView()
-    @$el.append(@scheduler.render().el)
     @fixHeight()
 
     @updateMessages()
