@@ -10,24 +10,24 @@ Foresight.SchedulerView = Backbone.View.extend(
     'keyup': 'validate'
     'click button[type=submit]': 'schedule'
   initialize: ->
-    Foresight.bus.bind('calendar:select-date', (@month) =>
-      @date = @month.getSelectedDate()
-      @validDate = @date > new Date()
-      @dateEl.html(Foresight.formatDate(@date))
-      if @validDate
-        @dateEl.addClass('label-success').removeClass('label-important')
-      else
-        @dateEl.append(' *').addClass('label-important').removeClass('label-success')
-      @validate()
-    )
     Foresight.bus.bind('patientid:change', (id) =>
+      @trigger('message:set', null)
       if id
         @$el.slideDown()
       else
         @$el.slideUp()
     )
+    Foresight.bus.bind('calendar:select-date', =>
+      @$el.slideUp()
+    )
+    Foresight.bus.bind('message:select', (message) =>
+      @trigger('message:set', message)
+      @$el.slideDown()
+    )
+    @bind('message:set', _.bind(@setMessage, @))
     @render()
   render: ->
+    now = new Date()
     @$el.html("""
       <div class="container scheduler">
         <div class="row">
@@ -35,7 +35,7 @@ Foresight.SchedulerView = Backbone.View.extend(
         </div>
         <div class="row">
           <form class="span6">
-            <div id="myCarousel" class="carousel slide">
+            <div id="templates" class="carousel slide">
               <div class="carousel-inner">
                 <div class="item active">
                   I'm a sample message.
@@ -50,14 +50,14 @@ Foresight.SchedulerView = Backbone.View.extend(
                   <textarea placeholder="Write your custom message here"></textarea>
                 </div>
               </div>
-              <a class="left carousel-control" href="#myCarousel" data-slide="prev">
+              <a class="left carousel-control" href="#templates" data-slide="prev">
                 <i class="icon-arrow-left"></i>
               </a>
-              <a class="right carousel-control" href="#myCarousel" data-slide="next">
+              <a class="right carousel-control" href="#templates" data-slide="next">
                 <i class="icon-arrow-right"></i>
               </a>
             </div>
-            <div class="input-append date pull-left" data-date="" data-date-format="yyyy-mm-dd">
+            <div class="input-append date pull-left" data-date="#{now.getFullYear()}-#{now.getMonth() + 1}-#{now.getDate()}" data-date-format="yyyy-mm-dd">
               <input class="span2" size="16" type="text" value="" readonly><span class="add-on"><i class="icon-calendar"></i></span>
             </div>
             <div class="btn-group pull-left" data-toggle="buttons-radio">
@@ -120,5 +120,18 @@ Foresight.SchedulerView = Backbone.View.extend(
     )
   close: ->
     @$el.slideUp()
-    Foresight.bus.trigger('patientid:clear')
+    Foresight.bus.trigger('patientid:set', '')
+  setDate: (timestamp) ->
+    datepicker = @$('.date').data('datepicker')
+    datepicker.date = new Date(@message.get('timestamp'))
+    datepicker.setValue()
+  setMessage: (@message) ->
+    if @message
+      patient_id = @message?.get('patient_id') or ''
+      Foresight.bus.trigger('patientid:set', patient_id)
+      @patient_view.onPatientChange(patient_id)
+      @$('.carousel').carousel(3)
+      @setDate(@message.get('timestamp'))
+      @$('textarea').val(@message.get('message'))
+      @$('[type=submit]').html('Update')
 )

@@ -23,8 +23,10 @@ module.exports =
       [sum, allSent]
   messages:
     map: (doc) ->
-      tasks = doc.tasks or []
-      scheduled_tasks = doc.scheduled_tasks or []
+      { patient_id, patient_identifiers, tasks, scheduled_tasks, _id, _rev } = doc
+      tasks ?= []
+      scheduled_tasks ?= []
+      patient_identifiers ?= []
 
       list = tasks.concat(scheduled_tasks)
 
@@ -36,10 +38,13 @@ module.exports =
           date = new Date(ts)
           messages.forEach((message) ->
             emit(["#{date.getFullYear()}", "#{date.getMonth() + 1}", "#{date.getDate()}"],
+              patient_id: patient_identifiers[0] or patient_id
               sent: sent
               timestamp: ts
               message: message.message
               to: message.to
+              _id: _id
+              _rev: _rev
             )
           )
       )

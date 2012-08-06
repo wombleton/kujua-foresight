@@ -6,8 +6,11 @@ Foresight.MainView = Backbone.View.extend(
   events:
     'keyup .navbar-form input': 'onPatientChange'
   initialize: ->
-    Foresight.bus.bind('patientid:clear', =>
-      @$('.navbar-form input').val('').focus()
+    Foresight.bus.bind('patientid:set', (patient_id) =>
+      @$('.navbar-form input').val(patient_id).focus()
+    )
+    Foresight.bus.bind('calendar:select-date', ->
+      Foresight.bus.trigger('patientid:set', '')
     )
     @render()
   render: ->
@@ -24,13 +27,13 @@ Foresight.MainView = Backbone.View.extend(
           </div>
         </div>
       </div>
-      <header class=""></header>
+      <header class="hide"></header>
       <div class="container">
         <div class="row">
           <div class="span8">
             <div id="calendar">&nbsp;</div>
           </div>
-          <div class="span4 hide" id="detail">
+          <div class="span4" id="detail">
           </div>
         </div>
       </div>
@@ -40,6 +43,6 @@ Foresight.MainView = Backbone.View.extend(
     @scheduler = new Foresight.SchedulerView(el: @$('header'))
     @
   onPatientChange: _.debounce((e) ->
-      Foresight.bus.trigger('patientid:change', $(e.target).val())
-    , 100)
+    Foresight.bus.trigger('patientid:change', $(e.target).val())
+  , 100)
 )

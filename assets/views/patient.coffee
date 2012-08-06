@@ -55,7 +55,7 @@ Foresight.PatientView = Backbone.View.extend(
         <div class="message">
           <div class="label label-info">
             <i class="icon-bolt"></i>
-            Next Message
+            Scheduled Message
           </div>
           <span class="label label-info">#{Foresight.formatDate(msg.due)}</span>
           #{msg.messages[0].message}
@@ -66,7 +66,7 @@ Foresight.PatientView = Backbone.View.extend(
         <div class="message">
           <div class="label label-info">
             <i class="icon-bolt"></i>
-            No Next Message
+            No scheduled messages
           </div>
         </div>
       """
@@ -88,7 +88,7 @@ Foresight.PatientView = Backbone.View.extend(
         <div class="message">
           <div class="label label-success">
             <i class="icon-envelope"></i>
-            No Last Message
+            No delivered messages
           </div>
         </div>
       """

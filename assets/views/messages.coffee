@@ -28,7 +28,7 @@ Foresight.MessagesView = Backbone.View.extend(
   fixHeight: _.debounce(->
       h = document.documentElement.clientHeight - 70
       $('#detail').height(h)
-      $('#detail .messages-body').height(h - 230)
+      $('#detail .messages-body').height(h - 60)
     , 50)
   updateMessages: ->
     @body.html('')
