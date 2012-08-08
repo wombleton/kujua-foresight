@@ -149,7 +149,6 @@ Foresight.SchedulerView = Backbone.View.extend(
     hour = date.getHours()
 
     { am, midday, pm } = Foresight.config
-    debugger
     if hour <= am
       @$("button[data-time=#{am}]").button('toggle')
     else if am < hour < pm
