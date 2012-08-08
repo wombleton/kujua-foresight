@@ -8,6 +8,7 @@
 Foresight.SchedulerView = Backbone.View.extend(
   events:
     'click .close': 'close'
+    'slid .carousel': 'validate'
     'keyup': 'validate'
     'click button[type=submit]': 'schedule'
   initialize: ->
@@ -26,7 +27,8 @@ Foresight.SchedulerView = Backbone.View.extend(
       @$el.slideDown()
     )
     @templates = []
-    Foresight.bus.bind('patient:change', (patient) =>
+    Foresight.bus.bind('patient:change', (@patient) =>
+      @validate()
       _.each(@templates, (template) ->
         template.patient = patient
         template.render()
@@ -70,6 +72,7 @@ Foresight.SchedulerView = Backbone.View.extend(
       </div>
     """
     @$el.html(html)
+    @button = @$('[type=submit]')
     @addTemplates()
     @patient_view = new Foresight.PatientView(model: null)
     @$('form').after(@patient_view.render().el)
@@ -89,15 +92,20 @@ Foresight.SchedulerView = Backbone.View.extend(
     @$('.carousel').carousel(
       interval: false
     )
-  validate: (e) ->
-    if $(e?.target).is('.patientId')
-      @onPatientChange(e.target.value)
+  getText: ->
+    item = @$('.carousel .item.active')
+    textareas = item.find('textarea')
+    if textareas.length
+      textareas.val()
     else
-      valid = @validDate and @$('.indicator').hasClass('btn-success') and @$('textarea').val().trim() isnt ''
-      if valid
-        @$('.schedule').removeAttr('disabled')
-      else
-        @$('.schedule').attr('disabled', 'disabled')
+      item.html()
+  validate: (e) ->
+    return unless @button
+    valid = @patient and @getText()
+    if valid
+      @button.removeAttr('disabled')
+    else
+      @button.attr('disabled', 'disabled')
   schedule: (e) ->
     { _id, _rev, phone } = @patient
     $.ajax(
