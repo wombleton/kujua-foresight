@@ -14,6 +14,9 @@ Foresight.MessagesView = Backbone.View.extend(
       )
       @messages.fetch()
     )
+    Foresight.bus.bind('calendar:refresh', =>
+      @messages.fetch()
+    )
     @render()
   render: ->
     @$el.html("""

@@ -17,8 +17,8 @@ Foresight.changes = (since = 0) ->
   $.ajax(
     complete: (response) ->
       changes = JSON.parse(response.responseText)
-      { last_seq } = changes
-      if since > 0
+      { last_seq, results } = changes
+      if since > 0 and results?.length
         Foresight.bus.trigger('calendar:refresh')
       Foresight.changes(last_seq)
     data:
@@ -36,5 +36,11 @@ $(document).ready(->
     am: Number($.kansoconfig('foresight_am')) or 8
     midday: Number($.kansoconfig('foresight_midday')) or 12
     pm: Number($.kansoconfig('foresight_pm')) or 17
-  Foresight.changes()
+  $.ajax(
+    complete: (response) ->
+      details = JSON.parse(response.responseText)
+      { update_seq } = details
+      Foresight.changes(update_seq)
+    url: '/kujua'
+  )
 )
