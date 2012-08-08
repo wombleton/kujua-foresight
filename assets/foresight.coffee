@@ -12,6 +12,7 @@ Foresight.formatDate = (date) ->
   date = new Date(date)
   "#{date.getDate()} #{Foresight.months[date.getMonth()]} #{date.getFullYear()}"
 
+
 Foresight.changes = (since = 0) ->
   $.ajax(
     complete: (response) ->
@@ -31,5 +32,9 @@ $(document).ready(->
   new Foresight.MainView(
     el: '#app'
   )
+  Foresight.config =
+    am: Number($.kansoconfig('foresight_am')) or 8
+    midday: Number($.kansoconfig('foresight_midday')) or 12
+    pm: Number($.kansoconfig('foresight_pm')) or 17
   Foresight.changes()
 )

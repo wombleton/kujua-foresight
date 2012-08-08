@@ -62,9 +62,9 @@ Foresight.SchedulerView = Backbone.View.extend(
               <input class="span2" size="16" type="text" value="" readonly><span class="add-on"><i class="icon-calendar"></i></span>
             </div>
             <div class="btn-group pull-left" data-toggle="buttons-radio">
-              <button class="active btn">AM</button>
-              <button class="btn">Midday</button>
-              <button class="btn">PM</button>
+              <button class="active btn" data-time="#{$.kansoconfig('foresight_am') or 8}">AM</button>
+              <button class="btn" data-time="#{$.kansoconfig('foresight_midday') or 12}">Midday</button>
+              <button class="btn" data-time="#{$.kansoconfig('foresight_pm') or 17}">PM</button>
             </div>
             <button class="btn btn-primary pull-left" type="submit" data-scheduling-text="Scheduling ...">Schedule</button>
           </form>
@@ -115,21 +115,19 @@ Foresight.SchedulerView = Backbone.View.extend(
 
         tasks.push(
           state: 'scheduled'
-          due: @date.getTime()
+          due: @getDate()
           messages: [
             to: phone
-            message: @$('textarea').val()
+            message: @getText()
           ]
           type: 'manual_reminder'
         )
         $.ajax(
-          complete: =>
-            Foresight.bus.trigger('calendar:select-date', @month)
           data: JSON.stringify(doc)
           type: 'PUT'
           url: "/kujua/#{_id}"
         )
-        @reset()
+        @close()
       data:
         _rev: _rev
       url: "/kujua/#{_id}"
@@ -137,10 +135,27 @@ Foresight.SchedulerView = Backbone.View.extend(
   close: ->
     @$el.slideUp()
     Foresight.bus.trigger('patientid:set', '')
+  getDate: ->
+    datepicker = @$('.date').data('datepicker')
+    date = datepicker.date
+    date.setMinutes(0, 0, 0)
+    date.setHours(@$('button[data-time].active').attr('data-time'))
+    date.getTime()
   setDate: (timestamp) ->
     datepicker = @$('.date').data('datepicker')
-    datepicker.date = new Date(timestamp)
+    datepicker.date = date =  new Date(timestamp)
     datepicker.setValue()
+
+    hour = date.getHours()
+
+    { am, midday, pm } = Foresight.config
+    debugger
+    if hour <= am
+      @$("button[data-time=#{am}]").button('toggle')
+    else if am < hour < pm
+      @$("button[data-time=#{midday}]").button('toggle')
+    else
+      @$("button[data-time=#{pm}]").button('toggle')
   setMessage: (@message) ->
     if @message
       patient_id = @message?.get('patient_id') or ''
@@ -155,6 +170,9 @@ Foresight.SchedulerView = Backbone.View.extend(
     else
       @$('.carousel').carousel(0)
       @$('textarea').val('')
-      @setDate(new Date())
+      date = new Date()
+      date.setDate(date.getDate() + 1)
+      date.setHours(0, 0, 0, 0)
+      @setDate(date)
       @$('[type=submit]').html('Schedule')
 )
