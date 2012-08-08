@@ -106,22 +106,33 @@ Foresight.SchedulerView = Backbone.View.extend(
       @button.removeAttr('disabled')
     else
       @button.attr('disabled', 'disabled')
+  updateTasks: (doc) ->
+    tasks = doc.scheduled_tasks ?= []
+
+    if @message
+      task = _.find(tasks, (task) ->
+        message = task.messages[0]
+        message and task.due is @message.get('timestamp') and message.message is @message.get('message') and message.to is @message.get('to')
+      , @)
+      if task
+        task.messages[0].message = @getText()
+        task.due = @getDate()
+    else
+      tasks.push(
+        state: 'scheduled'
+        due: @getDate()
+        messages: [
+          to: phone
+          message: @getText()
+        ]
+        type: 'manual_reminder'
+      )
   schedule: (e) ->
     { _id, _rev, phone } = @patient
     $.ajax(
       complete: (response) =>
         doc = JSON.parse(response.responseText)
-        tasks = doc.scheduled_tasks ?= []
-
-        tasks.push(
-          state: 'scheduled'
-          due: @getDate()
-          messages: [
-            to: phone
-            message: @getText()
-          ]
-          type: 'manual_reminder'
-        )
+        @updateTasks(doc)
         $.ajax(
           data: JSON.stringify(doc)
           type: 'PUT'
