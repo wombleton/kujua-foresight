@@ -15,10 +15,10 @@ Foresight.PatientView = Backbone.View.extend(
         complete: (response) =>
           rows = JSON.parse(response.responseText)?.rows
           @render(rows?[0], value)
-          @validate()
       )
   render: (row, patient_id = false) ->
     @patient = row?.value
+    Foresight.bus.trigger('patient:change', @patient)
     if @patient
       @$el.html("""
         <div class="container">

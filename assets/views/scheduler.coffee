@@ -1,4 +1,5 @@
 #= require patient
+#= require template
 #= require ../bootstrap-transition
 #= require ../bootstrap-datepicker
 #= require ../bootstrap-carousel
@@ -24,11 +25,18 @@ Foresight.SchedulerView = Backbone.View.extend(
       @trigger('message:set', message)
       @$el.slideDown()
     )
+    @templates = []
+    Foresight.bus.bind('patient:change', (patient) =>
+      _.each(@templates, (template) ->
+        template.patient = patient
+        template.render()
+      )
+    )
     @bind('message:set', _.bind(@setMessage, @))
     @render()
   render: ->
     now = new Date()
-    @$el.html("""
+    html = """
       <div class="container scheduler">
         <div class="row">
           <a class="btn close"><i class="icon-chevron-up"></i></a>
@@ -37,15 +45,6 @@ Foresight.SchedulerView = Backbone.View.extend(
           <form class="span6">
             <div id="templates" class="carousel slide">
               <div class="carousel-inner">
-                <div class="item active">
-                  I'm a sample message.
-                </div>
-                <div class="item">
-                  I'm another sample message.
-                </div>
-                <div class="item">
-                  I'm a third sample message.
-                </div>
                 <div class="item">
                   <textarea placeholder="Write your custom message here"></textarea>
                 </div>
@@ -69,18 +68,27 @@ Foresight.SchedulerView = Backbone.View.extend(
           </form>
         </div>
       </div>
-    """)
+    """
+    @$el.html(html)
+    @addTemplates()
     @patient_view = new Foresight.PatientView(model: null)
     @$('form').after(@patient_view.render().el)
 
-
     @$('.date').datepicker()
-    @$('.carousel').carousel(
-      interval: false
-    )
     @$('[data-toggle=buttons-radio] button').button()
     @$('form').submit(-> false)
     @
+  addTemplates: ->
+    templates = $.kansoconfig('foresight_templates', true) or []
+    _.each(templates, (template) ->
+      t = new Foresight.TemplateView(template: template)
+      @templates.push(t)
+      @$('.carousel .item:last').before(t.render().el)
+    , @)
+    @$('.carousel .item:first').addClass('active')
+    @$('.carousel').carousel(
+      interval: false
+    )
   validate: (e) ->
     if $(e?.target).is('.patientId')
       @onPatientChange(e.target.value)
@@ -123,15 +131,22 @@ Foresight.SchedulerView = Backbone.View.extend(
     Foresight.bus.trigger('patientid:set', '')
   setDate: (timestamp) ->
     datepicker = @$('.date').data('datepicker')
-    datepicker.date = new Date(@message.get('timestamp'))
+    datepicker.date = new Date(timestamp)
     datepicker.setValue()
   setMessage: (@message) ->
     if @message
       patient_id = @message?.get('patient_id') or ''
       Foresight.bus.trigger('patientid:set', patient_id)
       @patient_view.onPatientChange(patient_id)
-      @$('.carousel').carousel(3)
       @setDate(@message.get('timestamp'))
-      @$('textarea').val(@message.get('message'))
+      @$('.carousel').carousel(@$('.carousel .item').length - 1)
+      _.delay(=>
+        @$('textarea').val(@message.get('message')).select()
+      , 400)
       @$('[type=submit]').html('Update')
+    else
+      @$('.carousel').carousel(0)
+      @$('textarea').val('')
+      @setDate(new Date())
+      @$('[type=submit]').html('Schedule')
 )
