@@ -54,7 +54,7 @@ Foresight.MonthView = Backbone.View.extend(
           val = counts[date]
           if val
             val[0] += value[0]
-            val[0] &&= value[1]
+            val[1] &&= value[1]
           else
             counts[date] = value
           counts
