@@ -106,7 +106,7 @@ Foresight.SchedulerView = Backbone.View.extend(
       @button.removeAttr('disabled')
     else
       @button.attr('disabled', 'disabled')
-  updateTasks: (doc) ->
+  updateTasks: (doc, phone) ->
     tasks = doc.scheduled_tasks ?= []
 
     if @message
@@ -132,7 +132,7 @@ Foresight.SchedulerView = Backbone.View.extend(
     $.ajax(
       complete: (response) =>
         doc = JSON.parse(response.responseText)
-        @updateTasks(doc)
+        @updateTasks(doc, phone)
         $.ajax(
           data: JSON.stringify(doc)
           type: 'PUT'
